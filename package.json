@@ -2,8 +2,13 @@
   "name": "pokedex-kanto",
   "displayName": "Pokedex: Kanto Edition",
   "description": "Generation 1 Pokedex inside VS Code with sidebar, hover cards, autocomplete, and snippets.",
-  "version": "0.0.1",
-  "publisher": "local-dev",
+  "version": "0.0.2",
+  "publisher": "Mosberg",
+  "repository": {
+    "url": "https://github.com/Mosberg/PokemonPokedex-VSCodeExtension",
+    "type": "github",
+    "directory": "extension"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -83,7 +88,8 @@
         {
           "id": "pokedexKanto.sidebar",
           "name": "Kanto Pokedex",
-          "type": "webview"
+          "type": "webview",
+          "icon": "media/pokedex-logo.svg"
         }
       ]
     },
