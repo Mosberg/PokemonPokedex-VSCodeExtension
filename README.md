@@ -2,14 +2,14 @@
 
 A VS Code extension that provides a complete Generation 1 Pokedex (151 Pokemon) directly in your editor.
 
-Version 0.2 adds richer data and customization options, including per-Pokemon moves and flavor text.
+Version 0.2 adds richer data and customization options, including FireRed/LeafGreen move learnsets, evolution methods/levels, and acquisition data.
 
 ## Features
 
 - Sidebar Pokedex webview with:
   - Search by name or number
   - Type filters
-  - Detail panel with sprites, stats, moves, evolutions, and flavor text
+  - Detail panel with sprites, stats, move learnset details, evolution transitions (including methods/levels), FRLG catch locations, acquisition notes, and flavor text
   - Actions: insert JSON, insert Markdown, insert flavor text, copy flavor text, copy stats
 - Team Builder panel with drag-and-drop slots and export to JSON
 - Hover card support for Pokemon names in code
@@ -51,4 +51,22 @@ Version 0.2 adds richer data and customization options, including per-Pokemon mo
 - Local sprites: `src/images/sprites/normal` and `src/images/sprites/shiny`
 - Type icons: `src/images/types`
 
-Flavor text is stored as generated summary text for each Pokemon to keep the dataset practical for extension use.
+Flavor text is sourced from PokeAPI English entries (prioritizing Yellow, then Red/Blue).
+
+Each Pokemon entry now also includes FRLG-focused metadata sections:
+
+- `moveLearnset` with per-move metadata:
+  - learn method (`level-up`, `machine`, `tutor`, `egg`, etc.)
+  - level learned (where applicable)
+  - version group (`firered-leafgreen`)
+  - machine metadata (`TMxx`/`HMxx`)
+- `evolutionLines`, `evolvesFrom`, `evolvesTo`:
+  - full evolution line paths
+  - method/trigger details (level, item, trade, and other conditions)
+- `frlgEncounterLocations`:
+  - location and area names
+  - encounter methods, version availability, and level ranges
+- `frlgAcquisition`:
+  - consolidated acquisition notes (catch/evolve/gift/trade/static/event)
+
+Flavor text is sourced from PokeAPI English entries with FireRed/LeafGreen priority.

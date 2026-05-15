@@ -179,6 +179,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
+    "generate:data": "node scripts/generate-gen1-data.mjs",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "tsc --noEmit -p ./",

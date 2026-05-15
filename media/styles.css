@@ -261,13 +261,19 @@
 
 .pk-meta,
 .pk-evolutions,
-.pk-moves {
+.pk-moves,
+.pk-locations,
+.pk-acquisition {
   font-size: 0.74rem;
   color: #e2dfeb;
 }
 
-.pk-moves {
+.pk-evolutions,
+.pk-moves,
+.pk-locations,
+.pk-acquisition {
   line-height: 1.4;
+  white-space: pre-wrap;
 }
 
 .pk-flavor {

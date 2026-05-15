@@ -6,9 +6,14 @@ import { registerHoverProvider } from "./providers/hoverProvider";
 import { Pokemon } from "./types";
 import {
   findPokemonByQuery,
+  formatPokemonAcquisitionInfo,
+  formatPokemonEncounterInfo,
+  formatPokemonEvolutionInfo,
   formatPokemonId,
+  formatPokemonMoveAcquisition,
   formatPokemonMoves,
   formatPokemonStats,
+  formatPokemonTMHMMoves,
   getPokemonFlavorText,
 } from "./utils/pokemonUtils";
 import { SidebarWebviewProvider } from "./views/sidebarWebviewProvider";
@@ -253,7 +258,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   void vscode.window.setStatusBarMessage(
-    `Pokedex ready: ${pokedex.length} Pokemon loaded with moves and flavor text`,
+    `Pokedex ready: ${pokedex.length} Pokemon loaded with FRLG learnsets, evolutions, and acquisition data`,
     4000,
   );
 }
@@ -283,7 +288,28 @@ async function insertPokemonMoves(
   maxMoves: number,
 ): Promise<void> {
   const moves = formatPokemonMoves(pokemon, maxMoves);
-  const text = `Moves for ${pokemon.name}: ${moves}`;
+  const acquisition = formatPokemonMoveAcquisition(pokemon, maxMoves);
+  const tmHm = formatPokemonTMHMMoves(pokemon, maxMoves);
+  const evolution = formatPokemonEvolutionInfo(pokemon, Math.max(2, maxMoves));
+  const catchInfo = formatPokemonEncounterInfo(pokemon, Math.max(2, maxMoves));
+  const acquireInfo = formatPokemonAcquisitionInfo(
+    pokemon,
+    Math.max(2, maxMoves),
+  );
+
+  const text = [
+    `Move list for ${pokemon.name}: ${moves}`,
+    "",
+    acquisition,
+    "",
+    `TM/HM quick list: ${tmHm}`,
+    "",
+    `Evolution details:\n${evolution}`,
+    "",
+    `FRLG encounter locations:\n${catchInfo}`,
+    "",
+    `FRLG acquisition notes:\n${acquireInfo}`,
+  ].join("\n");
 
   const inserted = await insertTextAtCursor(text);
   if (inserted) {
@@ -329,6 +355,20 @@ async function insertPokemonMarkdown(
     `- Stats: ${formatPokemonStats(pokemon)}`,
     `- Evolutions: ${evolutions}`,
     `- Moves: ${formatPokemonMoves(pokemon, maxMoves)}`,
+    "",
+    "### Evolution (FireRed/LeafGreen)",
+    formatPokemonEvolutionInfo(pokemon, 6),
+    "",
+    "### Catch Locations (FireRed/LeafGreen)",
+    formatPokemonEncounterInfo(pokemon, 8),
+    "",
+    "### Acquisition (FireRed/LeafGreen)",
+    formatPokemonAcquisitionInfo(pokemon, 8),
+    "",
+    "### Move Acquisition",
+    formatPokemonMoveAcquisition(pokemon, maxMoves),
+    "",
+    `TM/HM quick list: ${formatPokemonTMHMMoves(pokemon, maxMoves)}`,
     "",
     `> ${getPokemonFlavorText(pokemon)}`,
   ].join("\n");

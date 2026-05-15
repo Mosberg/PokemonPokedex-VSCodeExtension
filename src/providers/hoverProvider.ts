@@ -4,7 +4,11 @@ import { getPokedexSettings } from "../config";
 import { Pokemon } from "../types";
 import {
   createPokemonLookup,
+  formatPokemonAcquisitionInfo,
+  formatPokemonEncounterInfo,
+  formatPokemonEvolutionInfo,
   formatPokemonId,
+  formatPokemonMoveAcquisition,
   formatPokemonMoves,
   getPokemonFlavorText,
   normalizePokemonName,
@@ -15,9 +19,6 @@ export function registerHoverProvider(
   pokedex: Pokemon[],
 ): vscode.Disposable {
   const lookup = createPokemonLookup(pokedex);
-  const pokemonById = new Map<number, Pokemon>(
-    pokedex.map((pokemon) => [pokemon.id, pokemon]),
-  );
 
   const provider: vscode.HoverProvider = {
     provideHover(document, position) {
@@ -39,12 +40,6 @@ export function registerHoverProvider(
       if (!pokemon) {
         return undefined;
       }
-
-      const evolutions = pokemon.evolutions.length
-        ? pokemon.evolutions
-            .map((id) => pokemonById.get(id)?.name ?? `#${formatPokemonId(id)}`)
-            .join(" -> ")
-        : "Final evolution";
 
       const spriteUri = vscode.Uri.file(
         path.join(
@@ -69,9 +64,27 @@ export function registerHoverProvider(
 
       const settings = getPokedexSettings();
       const movesText = formatPokemonMoves(pokemon, settings.maxMovesToDisplay);
+      const acquisition = formatPokemonMoveAcquisition(
+        pokemon,
+        Math.max(3, Math.min(settings.maxMovesToDisplay, 8)),
+      );
+      const evolutionText = formatPokemonEvolutionInfo(pokemon, 3);
+      const encounterText = formatPokemonEncounterInfo(pokemon, 3);
+      const acquisitionText = formatPokemonAcquisitionInfo(pokemon, 3);
 
       markdown.appendMarkdown(`**Moves:** ${movesText}\n\n`);
-      markdown.appendMarkdown(`**Evolutions:** ${evolutions}`);
+      markdown.appendMarkdown(
+        `**Learnset:** ${acquisition.replace(/\n/g, "  \n")}\n\n`,
+      );
+      markdown.appendMarkdown(
+        `**Evolution:** ${evolutionText.replace(/\n/g, "  \n")}\n\n`,
+      );
+      markdown.appendMarkdown(
+        `**FRLG Encounters:** ${encounterText.replace(/\n/g, "  \n")}\n\n`,
+      );
+      markdown.appendMarkdown(
+        `**FRLG Acquisition:** ${acquisitionText.replace(/\n/g, "  \n")}`,
+      );
 
       if (settings.showFlavorTextInHover) {
         markdown.appendMarkdown(`\n\n> ${getPokemonFlavorText(pokemon)}`);

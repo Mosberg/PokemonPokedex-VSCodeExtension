@@ -222,6 +222,8 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
             <div id="pk-stats" class="pk-stats"></div>
             <div id="pk-evolutions" class="pk-evolutions"></div>
             <div id="pk-moves" class="pk-moves"></div>
+            <div id="pk-locations" class="pk-locations"></div>
+            <div id="pk-acquisition" class="pk-acquisition"></div>
             <blockquote id="pk-flavor" class="pk-flavor"></blockquote>
 
             <div class="pk-actions">

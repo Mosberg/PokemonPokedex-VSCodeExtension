@@ -2,7 +2,11 @@ import * as vscode from "vscode";
 import { getPokedexSettings } from "../config";
 import { Pokemon } from "../types";
 import {
+  formatPokemonAcquisitionInfo,
+  formatPokemonEncounterInfo,
+  formatPokemonEvolutionInfo,
   formatPokemonId,
+  formatPokemonMoveAcquisition,
   formatPokemonMoves,
   formatPokemonStats,
   getPokemonFlavorText,
@@ -49,6 +53,30 @@ export function registerCompletionProvider(
         markdown.appendMarkdown(`${formatPokemonStats(pokemon)}\n\n`);
         markdown.appendMarkdown(
           `Moves: ${formatPokemonMoves(pokemon, settings.maxMovesToDisplay)}`,
+        );
+        markdown.appendMarkdown(
+          `\n\n${formatPokemonMoveAcquisition(
+            pokemon,
+            Math.max(3, Math.min(settings.maxMovesToDisplay, 6)),
+          ).replace(/\n/g, " | ")}`,
+        );
+        markdown.appendMarkdown(
+          `\n\nEvolution: ${formatPokemonEvolutionInfo(pokemon, 2).replace(
+            /\n/g,
+            " | ",
+          )}`,
+        );
+        markdown.appendMarkdown(
+          `\n\nFRLG Encounters: ${formatPokemonEncounterInfo(
+            pokemon,
+            2,
+          ).replace(/\n/g, " | ")}`,
+        );
+        markdown.appendMarkdown(
+          `\n\nFRLG Acquisition: ${formatPokemonAcquisitionInfo(
+            pokemon,
+            2,
+          ).replace(/\n/g, " | ")}`,
         );
 
         if (settings.showFlavorTextInHover) {

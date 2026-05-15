@@ -27,6 +27,8 @@
   const statsEl = document.getElementById("pk-stats");
   const evolutionsEl = document.getElementById("pk-evolutions");
   const movesEl = document.getElementById("pk-moves");
+  const locationsEl = document.getElementById("pk-locations");
+  const acquisitionEl = document.getElementById("pk-acquisition");
   const flavorEl = document.getElementById("pk-flavor");
 
   const insertJsonBtn = document.getElementById("pk-btn-json");
@@ -114,6 +116,274 @@
     statRow.appendChild(bar);
 
     return statRow;
+  }
+
+  function uniqueOrdered(values) {
+    const seen = new Set();
+    const output = [];
+
+    values.forEach((value) => {
+      if (!value || seen.has(value)) {
+        return;
+      }
+
+      seen.add(value);
+      output.push(value);
+    });
+
+    return output;
+  }
+
+  function summarizeLearnset(pokemon, maxEntries) {
+    const moveLearnset = Array.isArray(pokemon.moveLearnset)
+      ? pokemon.moveLearnset
+      : [];
+
+    if (moveLearnset.length === 0) {
+      return {
+        moveNames: [],
+        levelUp: [],
+        tmHm: [],
+        other: [],
+      };
+    }
+
+    const moveNames = [];
+    const levelUp = [];
+    const tmHm = [];
+    const other = [];
+
+    moveLearnset.forEach((entry) => {
+      const moveName = String(entry?.name || "").trim();
+      if (!moveName) {
+        return;
+      }
+
+      moveNames.push(moveName);
+
+      const learnMethods = Array.isArray(entry.learnMethods)
+        ? entry.learnMethods
+        : [];
+
+      learnMethods.forEach((method) => {
+        const methodName = normalize(method?.method);
+        const versionGroup = String(method?.versionGroup || "unknown");
+
+        if (methodName === "level-up") {
+          const level = Number(method?.level);
+          const levelLabel = Number.isFinite(level) ? `Lv ${level}` : "Lv ?";
+          levelUp.push(`${moveName} (${levelLabel}, ${versionGroup})`);
+          return;
+        }
+
+        if (methodName === "machine") {
+          const code = String(method?.machineCode || "TM/HM").trim();
+          tmHm.push(`${code} ${moveName}`);
+          return;
+        }
+
+        const displayMethod = String(method?.method || "other").trim();
+        other.push(`${moveName} (${displayMethod}, ${versionGroup})`);
+      });
+    });
+
+    const limit = Math.max(1, Math.floor(Number(maxEntries) || 10));
+
+    return {
+      moveNames: uniqueOrdered(moveNames),
+      levelUp: uniqueOrdered(levelUp).slice(0, limit),
+      tmHm: uniqueOrdered(tmHm).slice(0, limit),
+      other: uniqueOrdered(other).slice(0, limit),
+    };
+  }
+
+  function formatEvolutionMethod(requirement) {
+    const trigger = normalize(requirement?.trigger);
+
+    if (trigger === "level-up") {
+      const level = Number(requirement?.minLevel);
+      return Number.isFinite(level) ? `Level up at Lv ${level}` : "Level up";
+    }
+
+    if (trigger === "trade") {
+      const tradeSpecies = String(requirement?.tradeSpecies || "").trim();
+      return tradeSpecies ? `Trade for ${tradeSpecies}` : "Trade";
+    }
+
+    if (trigger === "use-item") {
+      const item = String(requirement?.item || "").trim();
+      return item ? `Use ${item}` : "Use evolution item";
+    }
+
+    return String(requirement?.trigger || "Unknown method").trim();
+  }
+
+  function summarizeEvolution(pokemon) {
+    const lines = [];
+
+    if (pokemon?.evolvesFrom && typeof pokemon.evolvesFrom === "object") {
+      const fromName = String(pokemon.evolvesFrom.fromName || "Unknown");
+      const methods = Array.isArray(pokemon.evolvesFrom.methods)
+        ? uniqueOrdered(
+            pokemon.evolvesFrom.methods
+              .map((method) => formatEvolutionMethod(method))
+              .filter((text) => text.length > 0),
+          )
+        : [];
+
+      const methodText = methods.length
+        ? methods.join(" or ")
+        : "Unknown method";
+      lines.push(`From: ${fromName} (${methodText})`);
+    } else {
+      lines.push("From: Base form");
+    }
+
+    const evolvesTo = Array.isArray(pokemon?.evolvesTo)
+      ? pokemon.evolvesTo
+      : [];
+    if (evolvesTo.length > 0) {
+      evolvesTo.forEach((transition) => {
+        const toName = String(transition?.toName || "Unknown");
+        const methods = Array.isArray(transition?.methods)
+          ? uniqueOrdered(
+              transition.methods
+                .map((method) => formatEvolutionMethod(method))
+                .filter((text) => text.length > 0),
+            )
+          : [];
+
+        const methodText = methods.length
+          ? methods.join(" or ")
+          : "Unknown method";
+        lines.push(`To: ${toName} (${methodText})`);
+      });
+    } else {
+      lines.push("To: Final stage");
+    }
+
+    const evolutionLines = Array.isArray(pokemon?.evolutionLines)
+      ? pokemon.evolutionLines
+      : [];
+
+    if (evolutionLines.length > 0) {
+      const formatted = evolutionLines
+        .slice(0, 2)
+        .map((line) => {
+          const ids = Array.isArray(line) ? line : [];
+          return ids
+            .map((id) => {
+              const numericId = Number(id);
+              const entry = pokemonById.get(numericId);
+              if (entry) {
+                return `#${entry.indexLabel} ${entry.name}`;
+              }
+
+              return `#${formatId(numericId)}`;
+            })
+            .join(" -> ");
+        })
+        .filter((line) => line.length > 0);
+
+      if (formatted.length > 0) {
+        lines.push(`Line: ${formatted.join(" | ")}`);
+      }
+    }
+
+    return lines;
+  }
+
+  function summarizeEncounterLocations(pokemon, maxEntries) {
+    const locations = Array.isArray(pokemon?.frlgEncounterLocations)
+      ? pokemon.frlgEncounterLocations
+      : [];
+
+    if (locations.length === 0) {
+      return ["FRLG Wild Encounters: Not listed"];
+    }
+
+    const limit = Math.max(1, Math.floor(Number(maxEntries) || 8));
+    const lines = locations.slice(0, limit).map((entry) => {
+      const location = String(entry?.location || "Unknown location");
+      const area = String(entry?.area || "").trim();
+      const areaLabel = area && area !== location ? ` (${area})` : "";
+
+      const methods = Array.isArray(entry?.methods)
+        ? uniqueOrdered(
+            entry.methods
+              .map((method) => String(method || "").trim())
+              .filter((method) => method.length > 0),
+          )
+        : [];
+
+      const methodLabel = methods.length ? methods.join("/") : "Unknown method";
+
+      const minLevel = Number(entry?.minLevel);
+      const maxLevel = Number(entry?.maxLevel);
+      let levelLabel = "";
+      if (Number.isFinite(minLevel) && Number.isFinite(maxLevel)) {
+        levelLabel =
+          minLevel === maxLevel
+            ? ` Lv ${minLevel}`
+            : ` Lv ${minLevel}-${maxLevel}`;
+      }
+
+      const versions = Array.isArray(entry?.versions)
+        ? uniqueOrdered(
+            entry.versions
+              .map((version) => String(version || "").trim())
+              .filter((version) => version.length > 0),
+          )
+        : [];
+
+      const versionLabel = versions.length ? ` [${versions.join("/")}]` : "";
+
+      return `${location}${areaLabel}: ${methodLabel}${levelLabel}${versionLabel}`;
+    });
+
+    if (locations.length > limit) {
+      lines.push(`+${locations.length - limit} more locations`);
+    }
+
+    return [`FRLG Wild Encounters:`, ...lines];
+  }
+
+  function summarizeAcquisition(pokemon, maxEntries) {
+    const acquisition = Array.isArray(pokemon?.frlgAcquisition)
+      ? pokemon.frlgAcquisition
+      : [];
+
+    if (acquisition.length === 0) {
+      return ["FRLG Acquisition: Not listed"];
+    }
+
+    const limit = Math.max(1, Math.floor(Number(maxEntries) || 8));
+    const lines = acquisition.slice(0, limit).map((entry) => {
+      const method = String(entry?.method || "unknown")
+        .split("-")
+        .filter((part) => part.length > 0)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+
+      const summary = String(entry?.summary || "").trim();
+      const versions = Array.isArray(entry?.games)
+        ? uniqueOrdered(
+            entry.games
+              .map((version) => String(version || "").trim())
+              .filter((version) => version.length > 0),
+          )
+        : [];
+
+      const versionLabel = versions.length ? ` [${versions.join("/")}]` : "";
+
+      return `${method}: ${summary}${versionLabel}`;
+    });
+
+    if (acquisition.length > limit) {
+      lines.push(`+${acquisition.length - limit} more acquisition entries`);
+    }
+
+    return [`FRLG Acquisition:`, ...lines];
   }
 
   function updateTypeButtonsState() {
@@ -233,6 +503,8 @@
       !statsEl ||
       !evolutionsEl ||
       !movesEl ||
+      !locationsEl ||
+      !acquisitionEl ||
       !flavorEl
     ) {
       return;
@@ -268,23 +540,51 @@
     statsEl.appendChild(createStatRow("SPD", pokemon.stats.spDefense));
     statsEl.appendChild(createStatRow("SPE", pokemon.stats.speed));
 
-    const evolutionNames = (pokemon.evolutions || []).map((id) => {
-      const evolved = pokemonById.get(id);
-      return evolved
-        ? `#${formatId(evolved.id)} ${evolved.name}`
-        : `#${formatId(id)}`;
-    });
+    evolutionsEl.textContent = summarizeEvolution(pokemon).join("\n");
 
-    evolutionsEl.textContent =
-      evolutionNames.length > 0
-        ? `Evolutions: ${evolutionNames.join(" -> ")}`
-        : "Evolutions: Final form";
+    const learnsetSummary = summarizeLearnset(
+      pokemon,
+      settings.maxMovesToDisplay,
+    );
 
-    const moves = Array.isArray(pokemon.moves) ? pokemon.moves : [];
-    movesEl.textContent =
-      moves.length > 0
-        ? `Moves: ${moves.slice(0, settings.maxMovesToDisplay).join(", ")}`
-        : "Moves: Not included in current data file";
+    const moves =
+      Array.isArray(pokemon.moves) && pokemon.moves.length > 0
+        ? pokemon.moves
+        : learnsetSummary.moveNames;
+
+    const moveLines = [];
+
+    if (moves.length > 0) {
+      moveLines.push(
+        `Moves: ${moves.slice(0, settings.maxMovesToDisplay).join(", ")}`,
+      );
+    } else {
+      moveLines.push("Moves: Not included in current data file");
+    }
+
+    if (learnsetSummary.levelUp.length > 0) {
+      moveLines.push(`Level-up: ${learnsetSummary.levelUp.join(", ")}`);
+    }
+
+    if (learnsetSummary.tmHm.length > 0) {
+      moveLines.push(`TM/HM: ${learnsetSummary.tmHm.join(", ")}`);
+    }
+
+    if (learnsetSummary.other.length > 0) {
+      moveLines.push(`Other methods: ${learnsetSummary.other.join(", ")}`);
+    }
+
+    movesEl.textContent = moveLines.join("\n");
+
+    const sectionLimit = Math.max(2, Math.min(settings.maxMovesToDisplay, 8));
+    locationsEl.textContent = summarizeEncounterLocations(
+      pokemon,
+      sectionLimit,
+    ).join("\n");
+    acquisitionEl.textContent = summarizeAcquisition(
+      pokemon,
+      sectionLimit,
+    ).join("\n");
 
     const flavorText = String(pokemon.flavorText || "").trim();
     if (settings.showFlavorTextInSidebar && flavorText.length > 0) {
