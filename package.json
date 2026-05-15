@@ -1,0 +1,186 @@
+{
+  "name": "pokedex-kanto",
+  "displayName": "Pokedex: Kanto Edition",
+  "description": "Generation 1 Pokedex inside VS Code with sidebar, hover cards, autocomplete, and snippets.",
+  "version": "0.0.1",
+  "publisher": "local-dev",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "pokemon",
+    "pokedex",
+    "gen1",
+    "kanto",
+    "vscode-extension"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pokedexKanto.openPokedex",
+        "title": "Pokedex: Open Sidebar",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.searchPokemon",
+        "title": "Pokedex: Search Pokemon",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.randomPokemon",
+        "title": "Pokedex: Random Pokemon",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.insertPokemonJson",
+        "title": "Pokedex: Insert Pokemon JSON",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.openTeamBuilder",
+        "title": "Pokedex: Open Team Builder",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.insertPokemonMoves",
+        "title": "Pokedex: Insert Pokemon Moves",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.insertPokemonFlavorText",
+        "title": "Pokedex: Insert Pokemon Flavor Text",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.copyPokemonFlavorText",
+        "title": "Pokedex: Copy Pokemon Flavor Text",
+        "category": "Pokedex"
+      },
+      {
+        "command": "pokedexKanto.openSettings",
+        "title": "Pokedex: Open Extension Settings",
+        "category": "Pokedex"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "pokedexKanto",
+          "title": "Pokedex",
+          "icon": "media/pokedex-logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "pokedexKanto": [
+        {
+          "id": "pokedexKanto.sidebar",
+          "name": "Kanto Pokedex",
+          "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "pokedexKanto.searchPokemon",
+          "when": "view == pokedexKanto.sidebar",
+          "group": "navigation@1"
+        },
+        {
+          "command": "pokedexKanto.randomPokemon",
+          "when": "view == pokedexKanto.sidebar",
+          "group": "navigation@2"
+        },
+        {
+          "command": "pokedexKanto.openTeamBuilder",
+          "when": "view == pokedexKanto.sidebar",
+          "group": "navigation@3"
+        },
+        {
+          "command": "pokedexKanto.openSettings",
+          "when": "view == pokedexKanto.sidebar",
+          "group": "navigation@4"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "javascript",
+        "path": "./snippets/pokemon-snippets.code-snippets"
+      },
+      {
+        "language": "typescript",
+        "path": "./snippets/pokemon-snippets.code-snippets"
+      },
+      {
+        "language": "json",
+        "path": "./snippets/pokemon-snippets.code-snippets"
+      },
+      {
+        "language": "markdown",
+        "path": "./snippets/pokemon-snippets.code-snippets"
+      }
+    ],
+    "configuration": {
+      "title": "Pokedex: Kanto Edition",
+      "properties": {
+        "pokedexKanto.defaultSpriteVariant": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "shiny"
+          ],
+          "default": "normal",
+          "description": "Default sprite variant shown in list and detail cards."
+        },
+        "pokedexKanto.maxMovesToDisplay": {
+          "type": "number",
+          "default": 12,
+          "minimum": 1,
+          "maximum": 60,
+          "description": "Maximum number of moves shown in sidebar and hover cards."
+        },
+        "pokedexKanto.showFlavorTextInSidebar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Pokemon flavor text in the sidebar details panel."
+        },
+        "pokedexKanto.showFlavorTextInHover": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Pokemon flavor text in hover cards."
+        },
+        "pokedexKanto.enableHoverProvider": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Pokemon hover cards in text editors."
+        },
+        "pokedexKanto.enableCompletionProvider": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable poke.<name> autocomplete suggestions."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "tsc --noEmit -p ./",
+    "test": "echo \"No automated tests configured yet.\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.8.3"
+  }
+}

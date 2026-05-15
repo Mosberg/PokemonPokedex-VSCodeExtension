@@ -1,0 +1,51 @@
+{
+  "Pokedex: Insert Pokemon JSON": {
+    "prefix": "pokejson",
+    "body": [
+      "{",
+      "  \"id\": ${1:1},",
+      "  \"name\": \"${2:Bulbasaur}\",",
+      "  \"types\": [\"${3:Grass}\", \"${4:Poison}\"],",
+      "  \"stats\": {",
+      "    \"hp\": ${5:45},",
+      "    \"attack\": ${6:49},",
+      "    \"defense\": ${7:49},",
+      "    \"spAttack\": ${8:65},",
+      "    \"spDefense\": ${9:65},",
+      "    \"speed\": ${10:45}",
+      "  },",
+      "  \"evolutions\": [${11:2}, ${12:3}],",
+      "  \"classification\": \"${13:Seed Pokemon}\",",
+      "  \"moves\": [\"${14:Tackle}\", \"${15:Vine Whip}\", \"${16:Razor Leaf}\"],",
+      "  \"flavorText\": \"${17:Bulbasaur is a Kanto Seed Pokemon with Grass / Poison typing.}\"",
+      "}",
+    ],
+    "description": "Insert a Pokemon JSON template",
+  },
+  "Pokedex: Insert Base Stats Block": {
+    "prefix": "pokestats",
+    "body": [
+      "stats: {",
+      "  hp: ${1:45},",
+      "  attack: ${2:49},",
+      "  defense: ${3:49},",
+      "  spAttack: ${4:65},",
+      "  spDefense: ${5:65},",
+      "  speed: ${6:45}",
+      "}",
+    ],
+    "description": "Insert a Pokemon base stats object",
+  },
+  "Pokedex: Insert Evolution Chain": {
+    "prefix": "pokeevo",
+    "body": ["evolutions: [${1:2}, ${2:3}]"],
+    "description": "Insert a Pokemon evolution chain id list",
+  },
+  "Pokedex: Insert Flavor Text": {
+    "prefix": "pokeflavor",
+    "body": [
+      "flavorText: \"${1:Bulbasaur is a Kanto Seed Pokemon with Grass / Poison typing.}\"",
+    ],
+    "description": "Insert a Pokemon flavor text field",
+  },
+}
